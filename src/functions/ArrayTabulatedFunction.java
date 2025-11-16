@@ -1,6 +1,7 @@
 package functions;
+import java.io.Serializable;
 
-public class ArrayTabulatedFunction implements TabulatedFunction {
+public class ArrayTabulatedFunction implements TabulatedFunction,Serializable {
     private FunctionPoint[] points;
     private int size;
     private static final double EPS = Math.ulp(1.0);
@@ -38,6 +39,34 @@ public class ArrayTabulatedFunction implements TabulatedFunction {
             points[i] = new FunctionPoint(x, values[i]);
         }
     }
+    public ArrayTabulatedFunction(FunctionPoint[] points) {
+        if (points == null) {
+            throw new IllegalArgumentException("Массив точек не может быть null");
+        }
+        if (points.length < 2) {
+            throw new IllegalArgumentException("Должно быть не менее двух точек");
+        }
+
+        int n = points.length;
+        this.points = new FunctionPoint[n];
+        this.size = n;
+
+        for (int i = 0; i < n; i++) {
+            if (points[i] == null) {
+                throw new IllegalArgumentException("Точка не может быть null (index = " + i + ")");
+            }
+
+            this.points[i] = new FunctionPoint(points[i]);
+            if (i > 0) {
+                double prevX = this.points[i - 1].getX();
+                double curX = this.points[i].getX();
+                if (!(curX > prevX + EPS)) {
+                    throw new IllegalArgumentException("Массив точек должен быть упорядочен по X (ошибка на индексе " + i + ")");
+                }
+            }
+        }
+    }
+
     private void checkIndex(int index) {
         if (index < 0 || index >= size) {
             throw new FunctionPointIndexOutOfBoundsException("Индекс " + index + " вне диапазона точек");

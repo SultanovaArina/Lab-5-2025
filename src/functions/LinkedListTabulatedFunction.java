@@ -1,6 +1,7 @@
 package functions;
+import java.io.Serializable;
 
-public class LinkedListTabulatedFunction implements TabulatedFunction {
+public class LinkedListTabulatedFunction implements TabulatedFunction,Serializable {
     private FunctionNode head;
     private int size;
     private static final double EPS = Math.ulp(1.0);
@@ -122,6 +123,37 @@ public class LinkedListTabulatedFunction implements TabulatedFunction {
             node.point.setY(values[i]);
         }
     }
+    public LinkedListTabulatedFunction(FunctionPoint[] points) {
+        if (points == null) {
+            throw new IllegalArgumentException("Массив точек не может быть null");
+        }
+        if (points.length < 2) {
+            throw new IllegalArgumentException("Должно быть не менее двух точек");
+        }
+
+        this.head = new FunctionNode(null);
+        head.next = head;
+        head.prev = head;
+        this.size = 0;
+
+        for (int i = 0; i < points.length; i++) {
+            if (points[i] == null) {
+                throw new IllegalArgumentException("Точка не может быть null (index = " + i + ")");
+            }
+            FunctionPoint copy = new FunctionPoint(points[i]);
+            if (i > 0) {
+                double prevX = head.prev.point.getX();
+                double curX = copy.getX();
+                if (!(curX > prevX + EPS)) {
+                    throw new IllegalArgumentException("Массив точек должен быть упорядочен по X (ошибка на индексе " + i + ")");
+                }
+            }
+
+            FunctionNode newNode = addNodeToTail();
+            newNode.point = copy;
+        }
+    }
+
     public FunctionPoint getPoint(int index) {
         FunctionNode node = getNodeByIndex(index);
         return new FunctionPoint(node.point);
