@@ -1,7 +1,10 @@
 package functions;
-import java.io.Serializable;
+import java.io.Externalizable ;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.IOException;
 
-public class LinkedListTabulatedFunction implements TabulatedFunction,Serializable {
+public class LinkedListTabulatedFunction implements TabulatedFunction,Externalizable  {
     private FunctionNode head;
     private int size;
     private static final double EPS = Math.ulp(1.0);
@@ -20,6 +23,32 @@ public class LinkedListTabulatedFunction implements TabulatedFunction,Serializab
         head.next = head;
         head.prev = head;
         size = 0;
+    }
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeInt(size);
+        for (int i = 0; i < size; i++) {
+            out.writeDouble(getPointX(i));
+            out.writeDouble(getPointY(i));
+        }
+    }
+
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        int n = in.readInt();
+        head = new FunctionNode(null);
+        head.next = head;
+        head.prev = head;
+        size = 0;
+        for (int i = 0; i < n; i++) {
+            FunctionNode node = new FunctionNode(new FunctionPoint());
+            node.prev = head.prev;
+            node.next = head;
+            head.prev.next = node;
+            head.prev = node;
+            size++;
+
+            node.point.setX(in.readDouble());
+            node.point.setY(in.readDouble());
+        }
     }
     private FunctionNode getNodeByIndex(int index) {
         if (index < 0 || index >= size) {

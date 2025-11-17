@@ -93,49 +93,63 @@ public class Main {
         }
     }
 
-    // --- Задание 9: сериализация Serializable и Externalizable ---
+    // Задание 9: сериализация Serializable и Externalizable
     public static void checkSerialization() {
         try {
-            // Создаем композицию Log(Exp(x))
-            Function log = new Log(Math.E);
-            Function exp = new Exp();
-            TabulatedFunction tabFunc = TabulatedFunctions.tabulate(
-                    new Composition(log, exp), 0, 10, 11
-            );
+              // Serializable для ArrayTabulatedFunction
+             TabulatedFunction arrayFunc = TabulatedFunctions.tabulate( new Composition(new Log(Math.E), new Exp()), 0, 10, 11  );
 
-            // --- Serializable ---
-            ObjectOutputStream outSer = new ObjectOutputStream(new FileOutputStream("func_ser.dat"));
-            outSer.writeObject(tabFunc);
+            ObjectOutputStream outSer = new ObjectOutputStream(new FileOutputStream("array_ser.dat"));
+            outSer.writeObject(arrayFunc);  // Serializable
             outSer.close();
 
-            ObjectInputStream inSer = new ObjectInputStream(new FileInputStream("func_ser.dat"));
-            TabulatedFunction readSer = (TabulatedFunction) inSer.readObject();
+            ObjectInputStream inSer = new ObjectInputStream(new FileInputStream("array_ser.dat"));
+            TabulatedFunction readArray = (TabulatedFunction) inSer.readObject();
             inSer.close();
 
-            System.out.println("\nСравнение исходной и десериализованной (Serializable) функции:");
+            System.out.println("\nSerializable (Array) проверка:");
             for (double x = 0; x <= 10; x += 1) {
                 System.out.printf("x=%.1f, original=%.4f, read=%.4f%n",
-                        x, tabFunc.getFunctionValue(x), readSer.getFunctionValue(x));
+                        x, arrayFunc.getFunctionValue(x), readArray.getFunctionValue(x));
+            }
+            // Externalizable для LinkedListTabulatedFunction
+            Function func = new Composition(new Log(Math.E), new Exp());
+            double left = 0;
+            double right = 10;
+            int pointsCount = 11;
+
+            // Вычисляем значения функции в точках
+            double[] values = new double[pointsCount];
+            double step = (right - left) / (pointsCount - 1);
+            for (int i = 0; i < pointsCount; i++) {
+                double x = left + i * step;
+                values[i] = func.getFunctionValue(x);
             }
 
-            // --- Externalizable ---
-            ObjectOutputStream outExt = new ObjectOutputStream(new FileOutputStream("func_ext.dat"));
-            outExt.writeObject(tabFunc);
+            // Создаём LinkedListTabulatedFunction с готовыми значениями
+            LinkedListTabulatedFunction listFunc = new LinkedListTabulatedFunction(left, right, values);
+
+            // Сериализация Externalizable
+            ObjectOutputStream outExt = new ObjectOutputStream(new FileOutputStream("list_ext.dat"));
+            outExt.writeObject(listFunc);  // вызов writeExternal()
             outExt.close();
 
-            ObjectInputStream inExt = new ObjectInputStream(new FileInputStream("func_ext.dat"));
-            TabulatedFunction readExt = (TabulatedFunction) inExt.readObject();
+            // Десериализация
+            ObjectInputStream inExt = new ObjectInputStream(new FileInputStream("list_ext.dat"));
+            LinkedListTabulatedFunction readList = (LinkedListTabulatedFunction) inExt.readObject(); // вызов readExternal()
             inExt.close();
 
-            System.out.println("\nСравнение исходной и десериализованной (Externalizable) функции:");
+            System.out.println("\nExternalizable (LinkedList) проверка:");
             for (double x = 0; x <= 10; x += 1) {
                 System.out.printf("x=%.1f, original=%.4f, read=%.4f%n",
-                        x, tabFunc.getFunctionValue(x), readExt.getFunctionValue(x));
+                        x, listFunc.getFunctionValue(x), readList.getFunctionValue(x));
             }
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
+
+
 }
 
