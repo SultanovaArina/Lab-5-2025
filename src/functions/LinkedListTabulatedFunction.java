@@ -292,14 +292,31 @@ public class LinkedListTabulatedFunction implements TabulatedFunction,Externaliz
         if (this == o) return true;
         if (!(o instanceof TabulatedFunction)) return false;
 
-        TabulatedFunction other = (TabulatedFunction) o;
-        if (this.getPointsCount() != other.getPointsCount()) return false;
+        TabulatedFunction f = (TabulatedFunction) o;
 
-        for (int i = 0; i < size; i++) {
-            if (Math.abs(this.getPointX(i) - other.getPointX(i)) > EPS || Math.abs(this.getPointY(i) - other.getPointY(i)) > EPS) return false;
+        if (this.size != f.getPointsCount()) return false;
+
+        // оптимизация LinkedList - LinkedList
+        if (o instanceof LinkedListTabulatedFunction) {
+            FunctionNode a = this.head.next;
+            FunctionNode b = ((LinkedListTabulatedFunction) o).head.next;
+
+            while (a != this.head) {
+                if (!a.point.equals(b.point)) return false;
+                a = a.next;
+                b = b.next;
+            }
+            return true;
         }
+
+        // сравнение с ArrayTabulatedFunction
+        for (int i = 0; i < size; i++) {
+            if (!this.getPoint(i).equals(f.getPoint(i))) return false;
+        }
+
         return true;
     }
+
     public int hashCode() {
         int result = size;
         FunctionNode current = head.next;

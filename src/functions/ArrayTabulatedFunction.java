@@ -192,27 +192,29 @@ public class ArrayTabulatedFunction implements TabulatedFunction,Serializable {
     }
 
     public boolean equals(Object o) {
-        if (o == this) return true;
-        if (o == null) return false;
+        if (this == o) return true;
         if (!(o instanceof TabulatedFunction)) return false;
 
         TabulatedFunction f = (TabulatedFunction) o;
-        if (this.getPointsCount() != f.getPointsCount()) return false;
 
+        if (this.size != f.getPointsCount()) return false;
+
+        // оптимизация Array - Array
         if (o instanceof ArrayTabulatedFunction) {
             ArrayTabulatedFunction af = (ArrayTabulatedFunction) o;
             for (int i = 0; i < size; i++) {
-                if (Math.abs(this.points[i].getX() - af.points[i].getX()) > 1e-9 || Math.abs(this.points[i].getY() - af.points[i].getY()) > 1e-9)
-                    return false;
+                if (!this.points[i].equals(af.points[i])) return false;
             }
-        } else {
-            for (int i = 0; i < size; i++) {
-                if (Math.abs(this.points[i].getX() - f.getPointX(i)) > 1e-9 || Math.abs(this.points[i].getY() - f.getPointY(i)) > 1e-9)
-                    return false;
-            }
+            return true;
+        }
+
+        // сравнение с LinkedList
+        for (int i = 0; i < size; i++) {
+            if (!this.points[i].equals(f.getPoint(i))) return false;
         }
         return true;
     }
+
 
     public int hashCode() {
         int hash = size;
