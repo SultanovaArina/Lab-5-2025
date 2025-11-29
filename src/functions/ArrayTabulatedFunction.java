@@ -180,4 +180,55 @@ public class ArrayTabulatedFunction implements TabulatedFunction,Serializable {
         points[insertIndex] = new FunctionPoint(point);
         size++;
     }
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        for (int i = 0; i < size; i++) {
+            sb.append("(").append(points[i].getX()).append("; ").append(points[i].getY()).append(")");
+            if (i != size - 1) sb.append(", ");
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (o == null) return false;
+        if (!(o instanceof TabulatedFunction)) return false;
+
+        TabulatedFunction f = (TabulatedFunction) o;
+        if (this.getPointsCount() != f.getPointsCount()) return false;
+
+        if (o instanceof ArrayTabulatedFunction) {
+            ArrayTabulatedFunction af = (ArrayTabulatedFunction) o;
+            for (int i = 0; i < size; i++) {
+                if (Math.abs(this.points[i].getX() - af.points[i].getX()) > 1e-9 || Math.abs(this.points[i].getY() - af.points[i].getY()) > 1e-9)
+                    return false;
+            }
+        } else {
+            for (int i = 0; i < size; i++) {
+                if (Math.abs(this.points[i].getX() - f.getPointX(i)) > 1e-9 || Math.abs(this.points[i].getY() - f.getPointY(i)) > 1e-9)
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    public int hashCode() {
+        int hash = size;
+        for (int i = 0; i < size; i++) {
+            hash ^= points[i].hashCode();
+        }
+        return hash;
+    }
+
+    public Object clone() throws CloneNotSupportedException {
+        FunctionPoint[] newPoints = new FunctionPoint[size];
+        for (int i = 0; i < size; i++) {
+            newPoints[i] = (FunctionPoint) points[i].clone(); // глубокое клонирование
+        }
+        return new ArrayTabulatedFunction(newPoints);
+    }
+
+
 }

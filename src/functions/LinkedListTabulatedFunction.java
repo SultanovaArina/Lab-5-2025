@@ -276,6 +276,52 @@ public class LinkedListTabulatedFunction implements TabulatedFunction,Externaliz
     public double getRightDomainBorder() {
         return getPointX(size - 1);
     }
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        FunctionNode current = head.next;
+        while (current != head) {
+            sb.append("(").append(current.point.getX()).append("; ").append(current.point.getY()).append(")");
+            if (current.next != head) sb.append(", ");
+            current = current.next;
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TabulatedFunction)) return false;
+
+        TabulatedFunction other = (TabulatedFunction) o;
+        if (this.getPointsCount() != other.getPointsCount()) return false;
+
+        for (int i = 0; i < size; i++) {
+            if (Math.abs(this.getPointX(i) - other.getPointX(i)) > EPS || Math.abs(this.getPointY(i) - other.getPointY(i)) > EPS) return false;
+        }
+        return true;
+    }
+    public int hashCode() {
+        int result = size;
+        FunctionNode current = head.next;
+        while (current != head) {
+            result ^= current.point.hashCode();
+            current = current.next;
+        }
+        return result;
+    }
+    public Object clone() throws CloneNotSupportedException {
+        // создаём массив для клонирования точек
+        FunctionPoint[] clonedPoints = new FunctionPoint[this.size]; // используем size
+        FunctionNode current = this.head.next;
+
+        for (int i = 0; i < this.size; i++) {
+            clonedPoints[i] = (FunctionPoint) current.point.clone(); // глубокое клонирование точки
+            current = current.next;
+        }
+
+        // создаём новый объект LinkedListTabulatedFunction из массива точек
+        return new LinkedListTabulatedFunction(clonedPoints);
+    }
 
 }
 

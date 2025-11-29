@@ -34,4 +34,34 @@ public class FunctionPoint implements Serializable {
         this.y = y;
     }
 
+    public String toString() {
+        return "(" + x + "; " + y + ")";
+    }
+
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (o == null) return false;
+        if (!(o instanceof FunctionPoint)) return false;
+
+        FunctionPoint p = (FunctionPoint) o;
+
+        return Math.abs(this.x - p.x) < 1e-9 && Math.abs(this.y - p.y) < 1e-9;
+    }
+
+    public int hashCode() {
+        long xb = Double.doubleToLongBits(x);
+        long yb = Double.doubleToLongBits(y);
+
+        int x1 = (int)(xb >>> 32);
+        int x2 = (int)(xb & 0xFFFFFFFF);
+        int y1 = (int)(yb >>> 32);
+        int y2 = (int)(yb & 0xFFFFFFFF);
+
+        return x1 ^ x2 ^ y1 ^ y2;
+    }
+
+    public Object clone() {
+        return new FunctionPoint(this.x, this.y);
+    }
+
 }

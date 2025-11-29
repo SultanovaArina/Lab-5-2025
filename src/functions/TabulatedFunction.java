@@ -10,4 +10,7 @@ public interface TabulatedFunction extends Function {
     void setPoint(int index, FunctionPoint point) throws InappropriateFunctionPointException;
     void addPoint(FunctionPoint point) throws InappropriateFunctionPointException;
     void deletePoint(int index);
-    }
+
+    Object clone() throws CloneNotSupportedException;
+
+}

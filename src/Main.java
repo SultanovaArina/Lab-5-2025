@@ -1,155 +1,64 @@
 import functions.*;
-import functions.basic.*;
-import functions.meta.*;
-
-import java.io.*;
 
 public class Main {
-    public static void main(String[] args) {
-        System.out.println("=== Проверка аналитических функций ===");
-        checkAnalyticalFunctions();
+    public static void main(String[] args) throws CloneNotSupportedException {
 
-        System.out.println("\n=== Табулированные функции и сравнение с исходными ===");
-        checkTabulatedFunctions();
+        // Создание тестовых объектов
+        double[] values1 = {1.0, 2.0, 3.0, 4.0};
+        double[] values2 = {1.0, 2.0, 3.1, 4.0}; // немного изменённая точка для проверки equals и hashCode
 
-        System.out.println("\n=== Проверка сериализации (Serializable и Externalizable) ===");
-        checkSerialization();
+        ArrayTabulatedFunction arrayFunc1 = new ArrayTabulatedFunction(0.0, 3.0, values1);
+        ArrayTabulatedFunction arrayFunc2 = new ArrayTabulatedFunction(0.0, 3.0, values1);
+        ArrayTabulatedFunction arrayFunc3 = new ArrayTabulatedFunction(0.0, 3.0, values2);
+
+        LinkedListTabulatedFunction listFunc1 = new LinkedListTabulatedFunction(0.0, 3.0, values1);
+        LinkedListTabulatedFunction listFunc2 = new LinkedListTabulatedFunction(0.0, 3.0, values1);
+        LinkedListTabulatedFunction listFunc3 = new LinkedListTabulatedFunction(0.0, 3.0, values2);
+
+        // Проверка toString()
+        System.out.println("\ntoString() ");
+        System.out.println("ArrayTabulatedFunction: " + arrayFunc1);
+        System.out.println("LinkedListTabulatedFunction: " + listFunc1);
+
+        // Проверка equals()
+        System.out.println("\nequals()");
+        System.out.println("arrayFunc1.equals(arrayFunc2): " + arrayFunc1.equals(arrayFunc2)); // true
+        System.out.println("arrayFunc1.equals(arrayFunc3): " + arrayFunc1.equals(arrayFunc3)); // false
+        System.out.println("arrayFunc1.equals(listFunc1): " + arrayFunc1.equals(listFunc1));   // true
+        System.out.println("listFunc1.equals(listFunc3): " + listFunc1.equals(listFunc3));     // false
+
+        // Проверка hashCode()
+        System.out.println("\nhashCode()");
+        System.out.println("arrayFunc1.hashCode(): " + arrayFunc1.hashCode());
+        System.out.println("arrayFunc2.hashCode(): " + arrayFunc2.hashCode());
+        System.out.println("arrayFunc3.hashCode(): " + arrayFunc3.hashCode());
+        System.out.println("listFunc1.hashCode(): " + listFunc1.hashCode());
+        System.out.println("listFunc2.hashCode(): " + listFunc2.hashCode());
+        System.out.println("listFunc3.hashCode(): " + listFunc3.hashCode());
+
+        // Проверка clone()
+        System.out.println("\n clone() и проверка глубокого клонирования");
+        ArrayTabulatedFunction arrayClone = (ArrayTabulatedFunction) arrayFunc1.clone();
+        LinkedListTabulatedFunction listClone = (LinkedListTabulatedFunction) listFunc1.clone();
+
+        System.out.println("Клоны до изменения исходных объектов:");
+        System.out.println("arrayClone: " + arrayClone);
+        System.out.println("listClone: " + listClone);
+
+        // Изменяем исходные объекты
+        arrayFunc1.setPointY(0, 10.0);
+        listFunc1.setPointY(0, 10.0);
+
+        System.out.println("\nПосле изменения исходных объектов:");
+        System.out.println("Исходный arrayFunc1: " + arrayFunc1);
+        System.out.println("Клон arrayClone (должен остаться прежним): " + arrayClone);
+
+        System.out.println("Исходный listFunc1: " + listFunc1);
+        System.out.println("Клон listClone (должен остаться прежним): " + listClone);
+
+        // Проверка equals() между клоном и исходным после изменения
+        System.out.println("\nПроверка equals() после изменения исходных объектов:");
+        System.out.println("arrayFunc1.equals(arrayClone): " + arrayFunc1.equals(arrayClone)); // false
+        System.out.println("listFunc1.equals(listClone): " + listFunc1.equals(listClone));     // false
     }
-
-    // --- Задание 8: аналитические функции Sin и Cos ---
-    public static void checkAnalyticalFunctions() {
-        Function sin = new Sin();
-        Function cos = new Cos();
-
-        System.out.println("\nСинус:");
-        for (double x = 0; x <= Math.PI; x += 0.1) {
-            System.out.printf("sin(%.2f) = %.4f%n", x, sin.getFunctionValue(x));
-        }
-
-        System.out.println("\nКосинус:");
-        for (double x = 0; x <= Math.PI; x += 0.1) {
-            System.out.printf("cos(%.2f) = %.4f%n", x, cos.getFunctionValue(x));
-        }
-    }
-
-    // --- Задание 8: табулирование и сравнение ---
-    public static void checkTabulatedFunctions() {
-        Function sin = new Sin();
-        Function cos = new Cos();
-
-        TabulatedFunction tabSin = TabulatedFunctions.tabulate(sin, 0, Math.PI, 10);
-        TabulatedFunction tabCos = TabulatedFunctions.tabulate(cos, 0, Math.PI, 10);
-
-        // Сумма квадратов табулированных функций
-        Function sumSquares = Functions.sum(
-                Functions.power(tabSin, 2),
-                Functions.power(tabCos, 2)
-        );
-
-        System.out.println("\nСравнение исходных и табулированных значений на [0, PI]:");
-        for (double x = 0; x <= Math.PI; x += 0.1) {
-            double f = sumSquares.getFunctionValue(x);
-            System.out.printf("x=%.2f, sin^2+cos^2=%.4f%n", x, f);
-        }
-
-        // Табулирование экспоненты и логарифма
-        TabulatedFunction tabExp = TabulatedFunctions.tabulate(new Exp(), 0, 10, 11);
-        TabulatedFunction tabLog = TabulatedFunctions.tabulate(new Log(Math.E), 0, 10, 11);
-
-        // Сохранение и чтение текстового файла (экспонента)
-        try (FileWriter writer = new FileWriter("exp_tab.txt")) {
-            TabulatedFunctions.writeTabulatedFunction(tabExp, writer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try (FileReader reader = new FileReader("exp_tab.txt")) {
-            TabulatedFunction readExp = TabulatedFunctions.readTabulatedFunction(reader);
-            System.out.println("\nСравнение исходной и считанной табулированной экспоненты:");
-            for (double x = 0; x <= 10; x += 1) {
-                System.out.printf("x=%.1f, original=%.4f, read=%.4f%n",
-                        x, tabExp.getFunctionValue(x), readExp.getFunctionValue(x));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // Сохранение и чтение бинарного файла (логарифм)
-        try (FileOutputStream out = new FileOutputStream("log_tab.bin")) {
-            TabulatedFunctions.outputTabulatedFunction(tabLog, out);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try (FileInputStream in = new FileInputStream("log_tab.bin")) {
-            TabulatedFunction readLog = TabulatedFunctions.inputTabulatedFunction(in);
-            System.out.println("\nСравнение исходного и считанного табулированного логарифма:");
-            for (double x = 0; x <= 10; x += 1) {
-                System.out.printf("x=%.1f, original=%.4f, read=%.4f%n",
-                        x, tabLog.getFunctionValue(x), readLog.getFunctionValue(x));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Задание 9: сериализация Serializable и Externalizable
-    public static void checkSerialization() {
-        try {
-              // Serializable для ArrayTabulatedFunction
-             TabulatedFunction arrayFunc = TabulatedFunctions.tabulate( new Composition(new Log(Math.E), new Exp()), 0, 10, 11  );
-
-            ObjectOutputStream outSer = new ObjectOutputStream(new FileOutputStream("array_ser.dat"));
-            outSer.writeObject(arrayFunc);  // Serializable
-            outSer.close();
-
-            ObjectInputStream inSer = new ObjectInputStream(new FileInputStream("array_ser.dat"));
-            TabulatedFunction readArray = (TabulatedFunction) inSer.readObject();
-            inSer.close();
-
-            System.out.println("\nSerializable (Array) проверка:");
-            for (double x = 0; x <= 10; x += 1) {
-                System.out.printf("x=%.1f, original=%.4f, read=%.4f%n",
-                        x, arrayFunc.getFunctionValue(x), readArray.getFunctionValue(x));
-            }
-            // Externalizable для LinkedListTabulatedFunction
-            Function func = new Composition(new Log(Math.E), new Exp());
-            double left = 0;
-            double right = 10;
-            int pointsCount = 11;
-
-            // Вычисляем значения функции в точках
-            double[] values = new double[pointsCount];
-            double step = (right - left) / (pointsCount - 1);
-            for (int i = 0; i < pointsCount; i++) {
-                double x = left + i * step;
-                values[i] = func.getFunctionValue(x);
-            }
-
-            // Создаём LinkedListTabulatedFunction с готовыми значениями
-            LinkedListTabulatedFunction listFunc = new LinkedListTabulatedFunction(left, right, values);
-
-            // Сериализация Externalizable
-            ObjectOutputStream outExt = new ObjectOutputStream(new FileOutputStream("list_ext.dat"));
-            outExt.writeObject(listFunc);  // вызов writeExternal()
-            outExt.close();
-
-            // Десериализация
-            ObjectInputStream inExt = new ObjectInputStream(new FileInputStream("list_ext.dat"));
-            LinkedListTabulatedFunction readList = (LinkedListTabulatedFunction) inExt.readObject(); // вызов readExternal()
-            inExt.close();
-
-            System.out.println("\nExternalizable (LinkedList) проверка:");
-            for (double x = 0; x <= 10; x += 1) {
-                System.out.printf("x=%.1f, original=%.4f, read=%.4f%n",
-                        x, listFunc.getFunctionValue(x), readList.getFunctionValue(x));
-            }
-
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-
 }
-
